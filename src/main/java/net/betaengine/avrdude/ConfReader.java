@@ -10,12 +10,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 
 public class ConfReader {
+	private final static Logger log = LoggerFactory.getLogger(ConfReader.class);
+
 	private Iterator<String> lines;
 
 	public static void main(String[] args) {
@@ -24,16 +30,13 @@ public class ConfReader {
 		ConfContainer base = reader.process("http://svn.savannah.nongnu.org/viewvc/*checkout*/trunk/avrdude/avrdude.conf.in?revision=1297&root=avrdude");
 		
 		System.err.println(base);
-		System.err.println(allParts);
-		System.err.println(allQualifiedParts);
-		System.err.println(allParentedParts);
 	}
 
 	public ConfContainer process(String spec) {
 		try {
 			lines = Resources.readLines(new URL(spec), Charsets.UTF_8).iterator();
 
-			ConfContainer base = new ConfContainer("base", null, null);
+			ConfContainer base = new BaseContainer();
 			
 			process(base);
 			
@@ -59,7 +62,7 @@ public class ConfReader {
 						builder.append(line);
 					}
 
-					parent.addProperty(builder.toString());
+					addProperty(parent, builder.toString());
 				} else {
 					ConfContainer child = parent.addContainer(line);
 
@@ -69,118 +72,163 @@ public class ConfReader {
 		}
 	}
 	
-	private final static Set<String> allParts = new HashSet<>();
-	private final static Set<String> allQualifiedParts = new HashSet<>(); 
-	private final static Set<String> allParentedParts = new HashSet<>(); 
+	private void addProperty(ConfContainer container, String s) {
+		int i = s.indexOf('=');
+		String key = s.substring(0, i).trim();
+		i++;
+		String value = s.substring(i, s.indexOf(';', i)).trim();
+		
+		container.addProperty(key, value);
+	}
 	
-	private static class ConfContainer {
-		private final String type;
-		private final String parent;
-		private final String qualifier;
+	private interface ConfContainer {
+		ConfContainer addContainer(String s);
+		
+		void addProperty(String key, String value);
+	}
+	
+//	{
+//	TODO ADD toString() TO PropertiesContainer AND Part
+//	GET RID OF OLD ConfContainer
+//	CONSIDER SPLITTING INTO Builder AND non-Builder CLASSES
+//	ADD getParts() AND getProgrammers() METHODS TO BaseContainer THAT RETURN MAPS.
+//	}
+	
+	private static class PropertiesContainer implements ConfContainer {
 		private final Map<String, String> properties = new LinkedHashMap<>();
-		private final List<ConfContainer> containers = new ArrayList<>();
-
-		// Type is "programmer", "part" and "memory".
-		// If type is "programmer" or "part" there maybe a specified parent.
-		// If type is "memory" there must be a qualifier, e.g. "flash".
-		public ConfContainer(String type, String parent, String qualifier) {
-			this.type = type;
-			this.parent = parent;
-			this.qualifier = qualifier;
-
-			assert qualifier == null ^ type.equals("memory");
-			allParts.add(type);
-			if (parent != null) {
-				allParentedParts.add(type);
-			}
-			if (qualifier != null) {
-				allQualifiedParts.add(type);
-			}
+		
+		@Override
+		public ConfContainer addContainer(String s) {
+			throw new UnsupportedOperationException();
 		}
 
-		public void addProperty(String s) {
-			int i = s.indexOf('=');
-			String key = s.substring(0, i).trim();
-			i++;
-			String value = dequote(s.substring(i, s.indexOf(';', i)).trim());
-
-			assert !properties.containsKey(key);
-
+		@Override
+		public void addProperty(String key, String value) {
 			properties.put(key, value);
 		}
 		
-		private String dequote(String s) {
-			if (s.startsWith("\"") && s.endsWith("\"")) {
-				String s2 = s.substring(1, (s.length() - 1));
-				
-				// Don't dequote things like z = "1 0 1 0", "x x x x".
-				if (!s2.contains("\"")) {
-					s = s2;
-				}
-			}
-			return s;
-		}
-
-		public ConfContainer addContainer(String s) {
-			String[] parts = s.split("\\s", 2);
-			String parent = null;
-			String qualifier = null;
-			
-			if (parts.length > 1) {
-				String extra = parts[1];
-				
-				if (extra.startsWith("parent ")) {
-					parent = dequote(extra.split("\\s", 2)[1]);
-				} else {
-					qualifier = dequote(extra);
-				}
-			}
-			
-			ConfContainer container = new ConfContainer(parts[0],
-					parent, qualifier);
-
-			containers.add(container);
-
-			return container;
+		public String getProperty(String key) {
+			return properties.get(key);
 		}
 		
-		public String toString() {
-			StringWriter stringer = new StringWriter();
-			IndentWriter indenter = new IndentWriter(stringer);
-			PrintWriter writer = new PrintWriter(indenter);
-			
-			toString(writer, indenter);
-			
-			writer.flush();
-			writer.close();
-			
-			return stringer.toString();
-		}
+		public PropertiesContainer() { }
 		
-		private void toString(PrintWriter writer, IndentWriter indenter) {
-			writer.print("<" + type + "> ");
-			if (parent != null) {
-				writer.print("(" + parent + ") ");
-			}
-			if (qualifier != null) {
-				writer.println("[" + qualifier + "] {");
-			}
-			writer.println("{");
-			indenter.increment();
-			
-			for (Map.Entry<String, String> entry : properties.entrySet()) {
-				writer.println("<" + entry.getKey() + "> = <" + entry.getValue() + ">");
-			}
-			
-			for (ConfContainer container : containers) {
-				writer.println();
-				container.toString(writer, indenter);
-			}
-			
-			indenter.decrement();
-			writer.println("}");
+		public PropertiesContainer(PropertiesContainer original) {
+			properties.putAll(original.properties);
 		}
 	}
+
+	private static class Part extends PropertiesContainer {
+		private final static Pattern PATTERN = Pattern.compile("memory \"(.*)\"");
+		private final Map<String, PropertiesContainer> memories = new LinkedHashMap<>();
+		
+		@Override
+		public PropertiesContainer addContainer(String s) {
+			Matcher m = PATTERN.matcher(s);
+			
+			assert m.matches();
+			
+			String qualifier = m.group();
+			PropertiesContainer memory = new PropertiesContainer();
+			
+			memories.put(qualifier, memory);
+			
+			return memory;
+		}
+		
+		public Part() { }
+		
+		public Part(Part original) {
+			super(original);
+			memories.putAll(original.memories);
+		}
+	}
+	
+	private static class BaseContainer implements ConfContainer {
+		private final static Pattern PATTERN = Pattern.compile("(programmer|part)(?: parent \"(.*)\")?");
+		private final List<PropertiesContainer> programmers = new ArrayList<>();
+		private final List<Part> parts = new ArrayList<>();
+
+		@Override
+		public ConfContainer addContainer(String s) {
+			Matcher m = PATTERN.matcher(s);
+			
+			assert m.matches();
+			
+			String type = m.group(1);
+			String parent = m.group(2);
+
+			return type.equals("programmer") ? addProgrammer(parent) : addPart(parent);
+		}
+		
+		private PropertiesContainer addProgrammer(String parent) {
+			PropertiesContainer child = parent == null ? new PropertiesContainer() : new PropertiesContainer(find(programmers, parent));
+			
+			programmers.add(child);
+			
+			return child;
+		}
+		
+		private Part addPart(String parent) {
+			Part child = parent == null ? new Part() : new Part(find(parts, parent));
+			
+			parts.add(child);
+			
+			return child;
+		}
+		
+		private <T extends PropertiesContainer> T find(List<T> parents, String id) {
+			for (T parent : parents) {
+				if (parent.getProperty("id").equals("\"" + id + "\"")) {
+					return parent;
+				}
+			}
+			
+			throw new RuntimeException("no parent with id \"" + id + "\"");
+		}
+
+		@Override
+		public void addProperty(String key, String value) {
+			log.info("ignoring property {} = {}", key, value);
+		}
+	}
+	
+//		public String toString() {
+//			StringWriter stringer = new StringWriter();
+//			IndentWriter indenter = new IndentWriter(stringer);
+//			PrintWriter writer = new PrintWriter(indenter);
+//			
+//			toString(writer, indenter);
+//			
+//			writer.flush();
+//			writer.close();
+//			
+//			return stringer.toString();
+//		}
+//		
+//		private void toString(PrintWriter writer, IndentWriter indenter) {
+//			writer.print("<" + type + "> ");
+//			if (parent != null) {
+//				writer.print("(" + parent + ") ");
+//			}
+//			if (qualifier != null) {
+//				writer.println("[" + qualifier + "] {");
+//			}
+//			writer.println("{");
+//			indenter.increment();
+//			
+//			for (Map.Entry<String, String> entry : properties.entrySet()) {
+//				writer.println("<" + entry.getKey() + "> = <" + entry.getValue() + ">");
+//			}
+//			
+//			for (ConfContainer container : containers) {
+//				writer.println();
+//				container.toString(writer, indenter);
+//			}
+//			
+//			indenter.decrement();
+//			writer.println("}");
+//		}
 
 	private String next() {
 		while ((lines.hasNext())) {
