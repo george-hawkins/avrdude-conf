@@ -27,16 +27,16 @@ public class ConfReader {
 	public static void main(String[] args) {
 		ConfReader reader = new ConfReader();
 		// Use a fixed revision of avrdude.conf.in that has been tested to parse as expected.
-		ConfContainer base = reader.process("http://svn.savannah.nongnu.org/viewvc/*checkout*/trunk/avrdude/avrdude.conf.in?revision=1297&root=avrdude");
+		ConfBuilder base = reader.process("http://svn.savannah.nongnu.org/viewvc/*checkout*/trunk/avrdude/avrdude.conf.in?revision=1297&root=avrdude");
 		
 		System.err.println(base);
 	}
 
-	public ConfContainer process(String spec) {
+	public ConfBuilder process(String spec) {
 		try {
 			lines = Resources.readLines(new URL(spec), Charsets.UTF_8).iterator();
 
-			ConfContainer base = new BaseContainer();
+			ConfBuilder base = new BaseContainer();
 			
 			process(base);
 			
@@ -46,7 +46,7 @@ public class ConfReader {
 		}
 	}
 
-	private void process(ConfContainer parent) {
+	private void process(ConfBuilder parent) {
 		String line;
 
 		while ((line = next()) != null) {
@@ -62,9 +62,9 @@ public class ConfReader {
 						builder.append(line);
 					}
 
-					addProperty(parent, builder.toString());
+					parent.addProperty(builder.toString());
 				} else {
-					ConfContainer child = parent.addContainer(line);
+					ConfBuilder child = parent.addContainer(line);
 
 					process(child);
 				}
@@ -72,19 +72,10 @@ public class ConfReader {
 		}
 	}
 	
-	private void addProperty(ConfContainer container, String s) {
-		int i = s.indexOf('=');
-		String key = s.substring(0, i).trim();
-		i++;
-		String value = s.substring(i, s.indexOf(';', i)).trim();
+	private interface ConfBuilder {
+		ConfBuilder addContainer(String s);
 		
-		container.addProperty(key, value);
-	}
-	
-	private interface ConfContainer {
-		ConfContainer addContainer(String s);
-		
-		void addProperty(String key, String value);
+		void addProperty(String s);
 	}
 	
 //	{
@@ -94,36 +85,40 @@ public class ConfReader {
 //	ADD getParts() AND getProgrammers() METHODS TO BaseContainer THAT RETURN MAPS.
 //	}
 	
-	private static class PropertiesContainer implements ConfContainer {
-		private final Map<String, String> properties = new LinkedHashMap<>();
+	private static class PropertiesBuilder implements ConfBuilder {
+		private final PropertiesContainer properties;
+
+		public PropertiesBuilder(PropertiesContainer properties) {
+			this.properties = properties;
+		}
 		
 		@Override
-		public ConfContainer addContainer(String s) {
+		public ConfBuilder addContainer(String s) {
 			throw new UnsupportedOperationException();
 		}
 
 		@Override
-		public void addProperty(String key, String value) {
-			properties.put(key, value);
-		}
-		
-		public String getProperty(String key) {
-			return properties.get(key);
-		}
-		
-		public PropertiesContainer() { }
-		
-		public PropertiesContainer(PropertiesContainer original) {
-			properties.putAll(original.properties);
+		public void addProperty(String s) {
+			int i = s.indexOf('=');
+			String key = s.substring(0, i).trim();
+			i++;
+			String value = s.substring(i, s.indexOf(';', i)).trim();
+			
+			properties.addProperty(key, value);
 		}
 	}
-
-	private static class Part extends PropertiesContainer {
+	
+	private static class PartBuilder extends PropertiesBuilder {
 		private final static Pattern PATTERN = Pattern.compile("memory \"(.*)\"");
-		private final Map<String, PropertiesContainer> memories = new LinkedHashMap<>();
+		private final Part part;
+
+		public PartBuilder(Part part) {
+			super(part);
+			this.part = part;
+		}
 		
 		@Override
-		public PropertiesContainer addContainer(String s) {
+		public ConfBuilder addContainer(String s) {
 			Matcher m = PATTERN.matcher(s);
 			
 			assert m.matches();
@@ -131,10 +126,32 @@ public class ConfReader {
 			String qualifier = m.group();
 			PropertiesContainer memory = new PropertiesContainer();
 			
-			memories.put(qualifier, memory);
+			part.addMemory(qualifier, memory);
 			
-			return memory;
+			return new PropertiesBuilder(memory);
 		}
+	}
+	
+	private static class PropertiesContainer {
+		private final Map<String, String> properties = new LinkedHashMap<>();
+		
+		public PropertiesContainer() { }
+		
+		public PropertiesContainer(PropertiesContainer original) {
+			properties.putAll(original.properties);
+		}
+		
+		public void addProperty(String key, String value) {
+			properties.put(key, value);
+		}
+		
+		public String getProperty(String key) {
+			return properties.get(key);
+		}
+	}
+
+	private static class Part extends PropertiesContainer {
+		private final Map<String, PropertiesContainer> memories = new LinkedHashMap<>();
 		
 		public Part() { }
 		
@@ -142,15 +159,19 @@ public class ConfReader {
 			super(original);
 			memories.putAll(original.memories);
 		}
+		
+		public void addMemory(String qualifier, PropertiesContainer memory) {
+			memories.put(qualifier, memory);
+		}
 	}
 	
-	private static class BaseContainer implements ConfContainer {
+	private static class BaseContainer implements ConfBuilder {
 		private final static Pattern PATTERN = Pattern.compile("(programmer|part)(?: parent \"(.*)\")?");
 		private final List<PropertiesContainer> programmers = new ArrayList<>();
 		private final List<Part> parts = new ArrayList<>();
 
 		@Override
-		public ConfContainer addContainer(String s) {
+		public ConfBuilder addContainer(String s) {
 			Matcher m = PATTERN.matcher(s);
 			
 			assert m.matches();
@@ -161,20 +182,20 @@ public class ConfReader {
 			return type.equals("programmer") ? addProgrammer(parent) : addPart(parent);
 		}
 		
-		private PropertiesContainer addProgrammer(String parent) {
+		private PropertiesBuilder addProgrammer(String parent) {
 			PropertiesContainer child = parent == null ? new PropertiesContainer() : new PropertiesContainer(find(programmers, parent));
 			
 			programmers.add(child);
 			
-			return child;
+			return new PropertiesBuilder(child);
 		}
 		
-		private Part addPart(String parent) {
+		private PartBuilder addPart(String parent) {
 			Part child = parent == null ? new Part() : new Part(find(parts, parent));
 			
 			parts.add(child);
 			
-			return child;
+			return new PartBuilder(child);
 		}
 		
 		private <T extends PropertiesContainer> T find(List<T> parents, String id) {
@@ -188,8 +209,8 @@ public class ConfReader {
 		}
 
 		@Override
-		public void addProperty(String key, String value) {
-			log.info("ignoring property {} = {}", key, value);
+		public void addProperty(String s) {
+			log.info("ignoring {}", s);
 		}
 	}
 	
