@@ -11,13 +11,13 @@ import net.betaengine.avrdude.Value.StringListValue;
 import net.betaengine.avrdude.Value.StringValue;
 
 public interface ValueVisitor {
-	void visit(StringValue value);
-	void visit(StringListValue value);
-	void visit(DecimalValue value);
-	void visit(DecimalListValue value);
-	void visit(InvertedValue value);
-	void visit(BooleanValue value);
-	void visit(EnumValue value);
-	void visit(HexValue value);
-	void visit(HexListValue value);
+    void visit(StringValue value);
+    void visit(StringListValue value);
+    void visit(DecimalValue value);
+    void visit(DecimalListValue value);
+    void visit(InvertedValue value);
+    void visit(BooleanValue value);
+    void visit(EnumValue value);
+    void visit(HexValue value);
+    void visit(HexListValue value);
 }
