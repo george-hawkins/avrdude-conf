@@ -14,9 +14,11 @@ public class Part {
 		memories.putAll(original.memories);
 	}
 	
+	public Map<String, Value<?>> getProperties() { return properties; }
+	
 	public void addMemory(String qualifier, Map<String, Value<?>> memory) {
 		memories.put(qualifier, memory);
 	}
 	
-	public Map<String, Value<?>> getProperties() { return properties; }
+	public Map<String, Map<String, Value<?>>> getMemories() { return memories; }
 }

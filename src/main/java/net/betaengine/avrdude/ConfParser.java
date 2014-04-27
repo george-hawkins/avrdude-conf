@@ -17,6 +17,14 @@ import com.google.common.io.Resources;
 public class ConfParser {
 	private final static Logger log = LoggerFactory.getLogger(ConfParser.class);
 	
+    // Use a fixed revision of avrdude.conf.in that has been tested to parse as expected.
+    private final static String AVRDUDE_CONF_IN_URL =
+            "http://svn.savannah.nongnu.org/viewvc/*checkout*/trunk/avrdude/avrdude.conf.in?revision=1297&root=avrdude";
+    
+    public void parse(Maker maker) {
+        parse(maker, AVRDUDE_CONF_IN_URL);
+    }
+    
 	public void parse(Maker maker, String spec) {
 		try {
 			process(new TopLevelBuilder(maker), new LineSupplier(spec));
@@ -130,7 +138,7 @@ public class ConfParser {
 			
 			assert m.matches();
 			
-			String qualifier = m.group();
+			String qualifier = m.group(1);
 			Map<String, Value<?>> memory = new LinkedHashMap<>();
 			
 			part.addMemory(qualifier, memory);
