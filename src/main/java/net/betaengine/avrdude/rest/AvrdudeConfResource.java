@@ -15,11 +15,11 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import net.betaengine.avrdude.ConfParser;
 import net.betaengine.avrdude.Maker;
 import net.betaengine.avrdude.Part;
 import net.betaengine.avrdude.Value;
 import net.betaengine.avrdude.Value.HexListValue;
+import net.betaengine.avrdude.parser.ConfParser;
 
 import com.google.common.collect.ImmutableMap;
 

@@ -1,4 +1,4 @@
-package net.betaengine.avrdude;
+package net.betaengine.avrdude.parser;
 
 import java.io.IOException;
 import java.net.URL;
@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.betaengine.avrdude.Maker;
+import net.betaengine.avrdude.Part;
+import net.betaengine.avrdude.Value;
 import net.betaengine.util.cache.Cache;
 import net.betaengine.util.cache.Cache.ValueCreator;
 import net.betaengine.util.cache.CacheException;

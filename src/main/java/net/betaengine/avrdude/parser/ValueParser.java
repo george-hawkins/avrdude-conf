@@ -1,4 +1,4 @@
-package net.betaengine.avrdude;
+package net.betaengine.avrdude.parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.betaengine.avrdude.Value;
 import net.betaengine.avrdude.Value.BooleanValue;
 import net.betaengine.avrdude.Value.DecimalListValue;
 import net.betaengine.avrdude.Value.DecimalValue;

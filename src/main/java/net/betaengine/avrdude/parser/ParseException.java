@@ -1,4 +1,4 @@
-package net.betaengine.avrdude;
+package net.betaengine.avrdude.parser;
 
 @SuppressWarnings("serial")
 public class ParseException extends RuntimeException {
