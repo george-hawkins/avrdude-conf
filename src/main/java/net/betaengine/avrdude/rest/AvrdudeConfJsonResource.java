@@ -19,20 +19,13 @@ import net.betaengine.avrdude.Maker;
 import net.betaengine.avrdude.Part;
 import net.betaengine.avrdude.Value;
 import net.betaengine.avrdude.Value.HexListValue;
-import net.betaengine.avrdude.parser.ConfParser;
 
 import com.google.common.collect.ImmutableMap;
 
 @Singleton
 @Path("/conf")
-public class AvrdudeConfResource {
-    private final Maker maker = new Maker();
-    
-    public AvrdudeConfResource() {
-        ConfParser parser = new ConfParser();
-        
-        parser.parse(maker);
-    }
+public class AvrdudeConfJsonResource {
+    private Maker maker() { return MakerSingleton.getInstance(); }
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -44,10 +37,10 @@ public class AvrdudeConfResource {
     
     @GET @Path("/content")
     @Produces(MediaType.APPLICATION_JSON)
-    public ImmutableMap<String, List<?>> getContent() {
+    public Map<String, List<?>> getContent() {
         return ImmutableMap.of(
-                "programmers", maker.getProgrammers(),
-                "parts", maker.getParts());
+                "programmers", maker().getProgrammers(),
+                "parts", maker().getParts());
     }
     
     @GET @Path("/programmers/ids")
@@ -55,7 +48,7 @@ public class AvrdudeConfResource {
     public List<String> getProgrammerIds() {
         List<String> result = new ArrayList<>();
         
-        for (Map<String, Value<?>> programmer : maker.getProgrammers()) {
+        for (Map<String, Value<?>> programmer : maker().getProgrammers()) {
             result.add((String)programmer.get("id").getValue());
         }
         
@@ -69,7 +62,7 @@ public class AvrdudeConfResource {
     }
     
     private Map<String, Value<?>> findProgrammerById(String id) {
-        for (Map<String, Value<?>> programmer : maker.getProgrammers()) {
+        for (Map<String, Value<?>> programmer : maker().getProgrammers()) {
             if (programmer.get("id").getValue().equals(id)) {
                 return programmer;
             }
@@ -79,7 +72,7 @@ public class AvrdudeConfResource {
     }
     
     private Part findPartById(String id) {
-        for (Part part : maker.getParts()) {
+        for (Part part : maker().getParts()) {
             if (part.getProperties().get("id").getValue().equals(id)) {
                 return part;
             }
@@ -93,7 +86,7 @@ public class AvrdudeConfResource {
     public List<String> getPartIds() {
         List<String> result = new ArrayList<>();
         
-        for (Part part : maker.getParts()) {
+        for (Part part : maker().getParts()) {
             result.add((String)part.getProperties().get("id").getValue());
         }
         
@@ -111,7 +104,7 @@ public class AvrdudeConfResource {
     public List<List<Integer>> getPartSignatures() {
         List<List<Integer>> result = new ArrayList<>();
         
-        for (Part part : maker.getParts()) {
+        for (Part part : maker().getParts()) {
             HexListValue value = (HexListValue)part.getProperties().get("signature");
             // Dummy parts like ".xmega" don't have signatures.
             if (value != null) {
@@ -149,7 +142,7 @@ public class AvrdudeConfResource {
     }
     
     private Part findPartBySignature(List<Integer> signature) {
-        for (Part part : maker.getParts()) {
+        for (Part part : maker().getParts()) {
             Value<?> value = part.getProperties().get("signature");
             
             if (value != null && value.getValue().equals(signature)) {

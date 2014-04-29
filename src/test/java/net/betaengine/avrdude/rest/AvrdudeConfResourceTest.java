@@ -10,7 +10,7 @@ import org.junit.Test;
 public class AvrdudeConfResourceTest extends JerseyTest {
     @Override
     protected Application configure() {
-        return new ResourceConfig(AvrdudeConfResource.class);
+        return new ResourceConfig(AvrdudeConfJsonResource.class);
     }
 
     @Test

@@ -2,7 +2,7 @@ package net.betaengine.avrdude;
 
 import java.io.IOException;
 
-import net.betaengine.avrdude.rest.AvrdudeConfResource;
+import net.betaengine.avrdude.rest.AvrdudeConfJsonResource;
 import net.betaengine.avrdude.rest.CustomObjectMapperBuilder;
 import net.betaengine.avrdude.rest.HexObjectMapperFactory;
 
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 public class JsonTest {
-    private final AvrdudeConfResource resource = new AvrdudeConfResource();
+    private final AvrdudeConfJsonResource resource = new AvrdudeConfJsonResource();
     
     @Test
     public void testJsonNames() throws IOException {

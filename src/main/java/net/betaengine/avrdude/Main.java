@@ -2,7 +2,7 @@ package net.betaengine.avrdude;
 
 import java.io.IOException;
 
-import net.betaengine.avrdude.rest.AvrdudeConfResource;
+import net.betaengine.avrdude.rest.AvrdudeConfJsonResource;
 import net.betaengine.avrdude.rest.HexObjectMapperFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,7 +18,7 @@ public class Main {
         }
         
         ObjectMapper mapper = HexObjectMapperFactory.createObjectMapper();
-        AvrdudeConfResource resource = new AvrdudeConfResource();
+        AvrdudeConfJsonResource resource = new AvrdudeConfJsonResource();
 
         try {
             mapper.writeValue(System.out,

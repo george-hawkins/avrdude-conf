@@ -103,7 +103,9 @@ public class ConfParser {
         public ConfBuilder addContainer(String s) {
             Matcher m = PATTERN.matcher(s);
             
-            assert m.matches();
+            if (!m.matches()) {
+                throw new ParseException(s);
+            }
             
             String type = m.group(1);
             String parent = m.group(2);
@@ -162,7 +164,9 @@ public class ConfParser {
         public ConfBuilder addContainer(String s) {
             Matcher m = PATTERN.matcher(s);
             
-            assert m.matches();
+            if (!m.matches()) {
+                throw new ParseException(s);
+            }
             
             String qualifier = m.group(1);
             Map<String, Value<?>> memory = new LinkedHashMap<>();
