@@ -1,0 +1,11 @@
+
+Jersey JIRA 2322 and 2335 cover using Jackson 2.X with Jersey.
+
+To see the tests that demonstrate what needs to be done (as there's no obvious documentation):
+$ git clone git@github.com:jersey/jersey.git
+$ cd jersey
+$ git log
+Search for 2335 and then look at the relevant commit:
+$ git show 669c14c19eef15e35ba82803889adc3e893200bb
+
+

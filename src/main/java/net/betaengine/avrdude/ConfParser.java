@@ -8,10 +8,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.betaengine.util.cache.Cache;
+import net.betaengine.util.cache.Cache.ValueCreator;
+import net.betaengine.util.cache.CacheException;
+import net.betaengine.util.cache.CacheFactory;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
+import com.google.common.io.CharSource;
 import com.google.common.io.Resources;
 
 public class ConfParser {
@@ -27,10 +33,27 @@ public class ConfParser {
     
     public void parse(Maker maker, String spec) {
         try {
-            process(new TopLevelBuilder(maker), new LineSupplier(spec));
+            process(new TopLevelBuilder(maker), new LineSupplier(getContents(spec)));
         } catch (IOException e) {
             throw new ParseException(e);
         }
+    }
+    
+    // http://www.random.org/cgi-bin/randbyte?nbytes=16&format=h
+    private final static String CONF_PARSER_UUID = "9cd8825c-6f91-f3c4-6972-34e5908c055c";
+    private final static Cache CACHE = CacheFactory.getCache(CONF_PARSER_UUID);
+    
+    private String getContents(final String spec) {
+        return CACHE.get(spec, new ValueCreator() {
+            @Override
+            public String create() {
+                try {
+                    return Resources.toString(new URL(spec), Charsets.UTF_8);
+                } catch (IOException e) {
+                    throw new CacheException(e);
+                }
+            }
+        });
     }
 
     private void process(ConfBuilder parent, LineSupplier lines) {
@@ -150,8 +173,8 @@ public class ConfParser {
     private static class LineSupplier {
         private final Iterator<String> lines;
 
-        public LineSupplier(String spec) throws IOException {
-            lines = Resources.readLines(new URL(spec), Charsets.UTF_8).iterator();
+        public LineSupplier(String content) throws IOException {
+            lines = CharSource.wrap(content).readLines().iterator();
         }
 
         public String next() {
