@@ -2,9 +2,9 @@ package net.betaengine.avrdude;
 
 import java.io.IOException;
 
-import net.betaengine.avrdude.rest.AvrdudeConfJsonResource;
 import net.betaengine.avrdude.rest.CustomObjectMapperBuilder;
 import net.betaengine.avrdude.rest.HexObjectMapperFactory;
+import net.betaengine.avrdude.rest.ResourceHelper;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -16,20 +16,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 public class JsonTest {
-    private final AvrdudeConfJsonResource resource = new AvrdudeConfJsonResource();
+    private final ResourceHelper helper = new ResourceHelper();
     
     @Test
     public void testJsonNames() throws IOException {
         ObjectMapper mapper = new CustomObjectMapperBuilder().build();
         
-        check(mapper.writeValueAsString(resource.getAllIds()));
+        check(mapper.writeValueAsString(helper.getAllIds()));
     }
     
     @Test
     public void testJsonBodies() throws IOException {
         ObjectMapper mapper = new CustomObjectMapperBuilder().build();
 
-        check(mapper.writeValueAsString(resource.getContent()));
+        check(mapper.writeValueAsString(helper.getContent()));
     }
     
     @Test
@@ -45,7 +45,7 @@ public class JsonTest {
         ObjectMapper mapper = HexObjectMapperFactory.createObjectMapper();
         
         // "avrftdi" contains hex values.
-        check(mapper.writeValueAsString(resource.getProgrammerById("avrftdi")));
+        check(mapper.writeValueAsString(helper.findProgrammerById("avrftdi")));
     }
     
     
@@ -55,7 +55,7 @@ public class JsonTest {
         ObjectMapper mapper = HexObjectMapperFactory.createObjectMapper();
         
         // "jtag3" contains a hex list value.
-        check(mapper.writeValueAsString(resource.getProgrammerById("jtag3")));
+        check(mapper.writeValueAsString(helper.findProgrammerById("jtag3")));
     }
     
     private void check(String jsonString) throws IOException {
