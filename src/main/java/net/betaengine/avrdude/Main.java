@@ -1,6 +1,12 @@
 package net.betaengine.avrdude;
 
-import java.io.OutputStreamWriter;
+import java.io.IOException;
+
+import net.betaengine.avrdude.rest.AvrdudeConfResource;
+import net.betaengine.avrdude.rest.HexObjectMapperFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 public class Main {
     public static void main(String[] args) {
@@ -10,18 +16,15 @@ public class Main {
             System.err.println("Usage: java " + Main.class.getName() + " [--names]");
             System.exit(1);
         }
-        ConfParser parser = new ConfParser();
-        Maker maker = new Maker();
         
-        parser.parse(maker);
-        
-        IndentPrintWriter writer = new IndentPrintWriter(new OutputStreamWriter(System.out));
-        
-        // Warning: using non-strict JSON with hex formatted integer literals.
-        AbstractPrinter printer = names ? new NamePrinter() : new BodyPrinter(false);
+        ObjectMapper mapper = HexObjectMapperFactory.createObjectMapper();
+        AvrdudeConfResource resource = new AvrdudeConfResource();
 
-        printer.printAll(writer, maker);
-        
-        writer.flush();
+        try {
+            mapper.writeValue(System.out,
+                    names ? resource.getAllIds() : resource.getContent());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

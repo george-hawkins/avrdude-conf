@@ -1,6 +1,5 @@
 package net.betaengine.avrdude.rest;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,14 +15,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import net.betaengine.avrdude.BodyPrinter;
 import net.betaengine.avrdude.ConfParser;
-import net.betaengine.avrdude.IndentPrintWriter;
 import net.betaengine.avrdude.Maker;
-import net.betaengine.avrdude.NamePrinter;
 import net.betaengine.avrdude.Part;
 import net.betaengine.avrdude.Value;
 import net.betaengine.avrdude.Value.HexListValue;
+
+import com.google.common.collect.ImmutableMap;
 
 @Singleton
 @Path("/conf")
@@ -38,18 +36,18 @@ public class AvrdudeConfResource {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public String getAllIds() {
-        Stringer stringer = new Stringer();
-        new NamePrinter().printAll(stringer.getWriter(), maker);
-        return stringer.toString();
+    public Map<String, List<String>> getAllIds() {
+        return ImmutableMap.of(
+                "programmers", getProgrammerIds(),
+                "parts", getPartIds());
     }
     
     @GET @Path("/content")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getContent() {
-        Stringer stringer = new Stringer();
-        new BodyPrinter().printAll(stringer.getWriter(), maker);
-        return stringer.toString();
+    public ImmutableMap<String, List<?>> getContent() {
+        return ImmutableMap.of(
+                "programmers", maker.getProgrammers(),
+                "parts", maker.getParts());
     }
     
     @GET @Path("/programmers/ids")
@@ -66,11 +64,8 @@ public class AvrdudeConfResource {
     
     @GET @Path("/programmers/ids/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getProgrammerById(@PathParam("id")String id) {
-        Stringer stringer = new Stringer();
-        new BodyPrinter().printProgrammer(stringer.getWriter(),
-                findProgrammerById(id));
-        return stringer.toString();
+    public Map<String, Value<?>> getProgrammerById(@PathParam("id")String id) {
+        return findProgrammerById(id);
     }
     
     private Map<String, Value<?>> findProgrammerById(String id) {
@@ -95,19 +90,20 @@ public class AvrdudeConfResource {
     
     @GET @Path("/parts/ids")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getPartIds() {
-        Stringer stringer = new Stringer();
-        new NamePrinter().printParts(stringer.getWriter(), maker.getParts());
-        return stringer.toString();
+    public List<String> getPartIds() {
+        List<String> result = new ArrayList<>();
+        
+        for (Part part : maker.getParts()) {
+            result.add((String)part.getProperties().get("id").getValue());
+        }
+        
+        return result;
     }
     
     @GET @Path("/parts/ids/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getPartById(@PathParam("id")String id) {
-        Stringer stringer = new Stringer();
-        new BodyPrinter().printPart(stringer.getWriter(),
-                findPartById(id));
-        return stringer.toString();
+    public Part getPartById(@PathParam("id")String id) {
+        return findPartById(id);
     }
     
     @GET @Path("/parts/signatures")
@@ -131,21 +127,25 @@ public class AvrdudeConfResource {
     
     @GET @Path("/parts/signatures/{signature}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getPartBySignature(@PathParam("signature")String text) {
-        Matcher m = SIGNATURE_PATTERN.matcher(text);
+    public Part getPartBySignature(@PathParam("signature")String hex) {
+
+        return findPartBySignature(parseSignature(hex));
+    }
+    
+    private List<Integer> parseSignature(String hex) {
+        Matcher m = SIGNATURE_PATTERN.matcher(hex);
         
         if (!m.matches()) {
             throw new WebApplicationException(Status.NOT_FOUND);
         }
+        
         List<Integer> signature = new ArrayList<>();
+        
         for (int i = 1; i <= 3; i++) {
             signature.add(Integer.valueOf(m.group(i), 16));
         }
-
-        Stringer stringer = new Stringer();
-        new BodyPrinter().printPart(stringer.getWriter(),
-                findPartBySignature(signature));
-        return stringer.toString();
+        
+        return signature;
     }
     
     private Part findPartBySignature(List<Integer> signature) {
@@ -158,20 +158,5 @@ public class AvrdudeConfResource {
         }
         
         throw new WebApplicationException(Status.NOT_FOUND);
-    }
-
-    private static class Stringer {
-        private final StringWriter stringer = new StringWriter();
-        private final IndentPrintWriter writer = new IndentPrintWriter(stringer);
-        
-        public IndentPrintWriter getWriter() { return writer; }
-        
-        @Override
-        public String toString() {
-            writer.flush();
-            writer.close();
-            
-            return stringer.toString();
-        }
     }
 }
