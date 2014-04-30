@@ -23,6 +23,7 @@ import com.google.common.primitives.Ints;
 @Path("/conf")
 public class AvrdudeConfHtmlResource {
     private final static Pattern CONTENT_PATTERN = Pattern.compile("\\[CONTENT\\]");
+    private final static Pattern PRETTYPRINT_CLASS_PATTERN = Pattern.compile(" class=\"prettyprint\"");
     
     private ResourceHelper helper = new ResourceHelper();
     private ObjectMapper mapper = HexObjectMapperFactory.createObjectMapper();
@@ -48,7 +49,10 @@ public class AvrdudeConfHtmlResource {
     @GET @Path("/content")
     @Produces(MediaType.TEXT_HTML)
     public String getContent() {
-        return stringify(helper.getContent());
+        String s = stringify(helper.getContent());
+
+        // Pretty printing the entire contents kills the browser remove the "prettyprint" class from the <pre> tag.
+        return PRETTYPRINT_CLASS_PATTERN.matcher(s).replaceFirst("");
     }
     
     @GET @Path("/programmers/ids")
