@@ -1,3 +1,13 @@
+The pom.xml and the initial REST related logic was generated as described in the Heroku section of getting started with Jesey - https://jersey.java.net/documentation/latest/getting-started.html#heroku-webapp
+
+I.e. like so:
+
+$ mvn archetype:generate -DarchetypeArtifactId=jersey-heroku-webapp \
+  -DarchetypeGroupId=org.glassfish.jersey.archetypes -DinteractiveMode=false \
+  -DgroupId=net.betaengine -DartifactId=avrdude-conf-heroku-webapp \
+  -Dpackage=net.betaengine -DarchetypeVersion=2.7
+
+---
 
 Jersey JIRA 2322 and 2335 cover using Jackson 2.X with Jersey.
 
@@ -7,5 +17,3 @@ $ cd jersey
 $ git log
 Search for 2335 and then look at the relevant commit:
 $ git show 669c14c19eef15e35ba82803889adc3e893200bb
-
-
