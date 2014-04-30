@@ -13,9 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Charsets;
 import com.google.common.html.HtmlEscapers;
 import com.google.common.io.Resources;
@@ -33,18 +31,18 @@ public class AvrdudeConfHtmlResource {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public String getAllIds() {
-        try {
-            DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
-            
-            // Use an indenter that will break the long arrays out into one element per line.
-            printer = printer.withArrayIndenter(DefaultPrettyPrinter.Lf2SpacesIndenter.instance);
-            
-            ObjectWriter objectWriter = mapper.writer().with(printer);
-            
-            return html(objectWriter.writeValueAsString(helper.getAllIds()));
-        } catch (JsonProcessingException e) {
-            throw new ResourceException(e);
-        }
+        // See this method in commit 8b91516eae9d002fa1c4b4a016b268fe63c965aa
+        // for a nice example of using DefaultPrettyPrinter with Lf2SpacesIndenter
+        // to format a long array with each element split out onto its own line.
+
+        StringBuilder b = new StringBuilder("{\n  \"programmers\" : ");
+
+        b.append(getCommentedArray((helper.getProgrammerIds())).replace("\n", "\n  "));
+        b.append(",\n  \"parts\" : ");
+        b.append(getCommentedArray((helper.getPartIds())).replace("\n", "\n  "));
+        b.append("\n}");
+
+        return html(b.toString());
     }
     
     @GET @Path("/content")
