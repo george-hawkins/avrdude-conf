@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>avrdude.conf as JSON REST service</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <div class="page-header">
+      <h2>avrdude.conf as JSON REST service</h2>
+      </div>
+      <p>
+      This is the HTML response for this REST resource. The JSON shown here is
+      formatted to be human readable and may contain comments and some integers
+      may be displayed as hex. Neither comments nor hex literals are allowed in
+      valid JSON.
+      <p>
+      To retrieve just the following as fully valid JSON specify
+      <code>Accept: application/json</code>
+      as one of the headers when requesting this resource.
+      <p>
+        <pre class="prettyprint">[CONTENT]</pre>
+      <p>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">REST resources</div>
+        <p>
+        <ul>
+          <li><a href="/conf">/conf</a>
+            - ids for all programmers and parts.</li>
+          <li><a href="/conf/content">/conf/content</a>
+            - details for all programmers and parts.</li>
+          <li><a href="/conf/programmers/ids">/conf/programmers/ids</a>
+            - ids for all programmers.</li>
+          <li><a id="programmerIdLink"
+            href="/conf/programmers/ids/avrftdi">/conf/programmers/ids/</a><input
+            id="programmerIdText" type="text" size="8" value="avrftdi">
+            - details for programmer with specified id.</li>
+          <li><a href="/conf/parts/ids">/conf/parts/ids</a> - ids for all parts.</li>
+          <li><a id="partIdLink" href="/conf/parts/ids/m328">/conf/parts/ids/</a><input
+            id="partIdText" type="text" size="8" value="m328">
+            - details for part with specified id.</li>
+          <li><a href="/conf/parts/signatures">/conf/parts/signatures</a>
+            - signatures for all parts.</li>
+          <li><a id="signatureIdLink"
+            href="/conf/parts/signatures/0x1e9514">/conf/parts/signatures/</a><input
+            id="signatureIdText" type="text" size="8" value="0x1e9514">
+            - details for part with specified signature.</li>
+        </ul> 
+      </div>
+
+    </div><!-- /.container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!--
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    -->
+    <script src="//google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+
+    <script>
+      (function ($) {
+        function updateHref(linkId, textId) {
+          var s = $(linkId).prop('href');
+          s = s.substring(0, s.lastIndexOf('/'));
+          s += '/' + $(textId).val();
+          $(linkId).prop('href', s);
+        }
+        function setupTextLink(linkId, textId) {
+          $(textId).change(function() {
+            updateHref(linkId, textId);
+          });
+          $(textId).keydown(function (e){
+            if(e.keyCode == 13){
+              // If you changed text and press enter, this handler
+              // will be called before the change handler, so...
+              updateHref(linkId, textId);
+        
+              window.location.href = $(linkId).prop('href');
+              return false;
+            }
+          });
+        }
+        setupTextLink('#programmerIdLink', '#programmerIdText');
+        setupTextLink('#partIdLink', '#partIdText');
+        setupTextLink('#signatureIdLink', '#signatureIdText');
+      })(jQuery);
+    </script>
+
+  </body>
+</html>

@@ -2,6 +2,7 @@ package net.betaengine.avrdude.rest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -32,8 +33,8 @@ public class AvrdudeConfJsonResource {
     
     @GET @Path("/programmers/ids")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getProgrammerIds() {
-        return helper.getProgrammerIds();
+    public Set<String> getProgrammerIds() {
+        return helper.getProgrammerIds().keySet();
     }
     
     @GET @Path("/programmers/ids/{id}")
@@ -44,8 +45,8 @@ public class AvrdudeConfJsonResource {
     
     @GET @Path("/parts/ids")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<String> getPartIds() {
-        return helper.getPartIds();
+    public Set<String> getPartIds() {
+        return helper.getPartIds().keySet();
     }
     
     @GET @Path("/parts/ids/{id}")
@@ -56,8 +57,8 @@ public class AvrdudeConfJsonResource {
     
     @GET @Path("/parts/signatures")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<List<Integer>> getPartSignatures() {
-        return helper.getPartSignatures();
+    public Set<List<Integer>> getPartSignatures() {
+        return helper.getPartSignatures().keySet();
     }
     
     @GET @Path("/parts/signatures/{signature}")
