@@ -51,7 +51,8 @@ public class AvrdudeConfHtmlResource {
     public String getContent() {
         String s = stringify(helper.getContent());
 
-        // Pretty printing the entire contents kills the browser remove the "prettyprint" class from the <pre> tag.
+        // Trying to pretty printing the entire contents "kills" the browser
+        // so remove the "prettyprint" class from the <pre> tag.
         return PRETTYPRINT_CLASS_PATTERN.matcher(s).replaceFirst("");
     }
     
