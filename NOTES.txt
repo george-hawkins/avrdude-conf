@@ -1,4 +1,4 @@
-The pom.xml and the initial REST related logic was generated as described in the Heroku section of getting started with Jesey - https://jersey.java.net/documentation/latest/getting-started.html#heroku-webapp
+The pom.xml was generated as described in the Heroku section of getting started with Jesey - https://jersey.java.net/documentation/latest/getting-started.html#heroku-webapp
 
 I.e. like so:
 
@@ -6,6 +6,8 @@ $ mvn archetype:generate -DarchetypeArtifactId=jersey-heroku-webapp \
   -DarchetypeGroupId=org.glassfish.jersey.archetypes -DinteractiveMode=false \
   -DgroupId=net.betaengine -DartifactId=avrdude-conf-heroku-webapp \
   -Dpackage=net.betaengine -DarchetypeVersion=2.7
+
+This also generated the initial Procfile, system.properties, web.xml and some Java classes to get started with.
 
 ---
 

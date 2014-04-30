@@ -49,6 +49,8 @@ public class ConfParser {
     private final static Cache CACHE = CacheFactory.getCache(CONF_PARSER_UUID);
     
     private String getContents(final String spec) {
+        // Fetching from svn.savannah.nongnu.org is extremely slow (averaging
+        // around 10 seconds) so we cache the retrieved content.
         return CACHE.get(spec, new ValueCreator() {
             @Override
             public String create() {
@@ -210,7 +212,8 @@ public class ConfParser {
                 int end = s.indexOf("*/", i);
                 s = s.substring(0, i) + s.substring(end + 2);
             }
-            
+
+            // @HAVE_PARPORT is used for magic #ifdef like logic.
             if (s.startsWith("@HAVE_PARPORT")) {
                 s = "";
             }

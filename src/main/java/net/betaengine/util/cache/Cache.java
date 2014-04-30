@@ -6,5 +6,7 @@ public interface Cache {
     }
     
     void setUuid(String uuid);
+
+    /** Cache entries never expire so don't use it for resources that change over time. */
     String get(String key, ValueCreator creator);
 }

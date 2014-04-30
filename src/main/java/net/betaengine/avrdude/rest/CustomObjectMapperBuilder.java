@@ -5,6 +5,7 @@ import java.util.Map;
 
 import net.betaengine.avrdude.Part;
 import net.betaengine.avrdude.Value;
+import net.betaengine.avrdude.Value.InvertedValue;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -29,6 +30,7 @@ public class CustomObjectMapperBuilder {
             (JsonSerializer<Value>)((JsonSerializer<?>)new ValueSerializer());
         
         addSerializer(Value.class, valueSerializer);
+        addSerializer(InvertedValue.class, new InvertedValueSerializer());
         addSerializer(Part.class, new PartSerializer());
     }
     
@@ -54,6 +56,15 @@ public class CustomObjectMapperBuilder {
         }
     }
     
+    private static class InvertedValueSerializer extends JsonSerializer<InvertedValue> {
+        @Override
+        public void serialize(InvertedValue value, JsonGenerator jgen,
+                SerializerProvider provider) throws IOException,
+                JsonProcessingException {
+            jgen.writeString("~" + value.getValue());
+        }
+    }
+
     private static class PartSerializer extends JsonSerializer<Part> {
         @Override
         public void serialize(Part part, JsonGenerator jgen,

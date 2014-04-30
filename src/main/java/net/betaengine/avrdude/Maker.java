@@ -13,7 +13,7 @@ public class Maker {
         return programmers;
     }
     
-    public final List<Part> getParts() {
+    public List<Part> getParts() {
         return parts;
     }
     

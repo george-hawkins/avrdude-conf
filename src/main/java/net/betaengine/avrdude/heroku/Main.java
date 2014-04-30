@@ -3,6 +3,7 @@ package net.betaengine.avrdude.heroku;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+// This file was originally generated using the archetype org.glassfish.jersey.archetypes:jersey-heroku-webapp.
 /**
  * This class launches the web application in an embedded Jetty container.
  * This is the entry point to your application. The Java

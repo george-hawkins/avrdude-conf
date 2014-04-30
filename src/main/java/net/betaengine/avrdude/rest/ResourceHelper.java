@@ -132,6 +132,7 @@ public class ResourceHelper {
     
     @SuppressWarnings("serial")
     private static class NotFoundException extends WebApplicationException {
+        // The given message appears in the browser as the 404 text.
         public NotFoundException(String message) {
             super(Response
                     .status(Status.NOT_FOUND)
