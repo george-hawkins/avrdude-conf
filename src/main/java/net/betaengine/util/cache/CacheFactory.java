@@ -8,7 +8,7 @@ public class CacheFactory {
 
     public static Cache getCache(String uuid) {
         try {
-            String name = System.getProperty("betaengine.cache", NoCache.class.getName());
+            String name = getCacheClassName();
             Cache cache = (Cache)Class.forName(name).newInstance();
             
             cache.setUuid(uuid);
@@ -19,6 +19,13 @@ public class CacheFactory {
         } catch (Exception e) {
             throw new CacheException(e);
         }
+    }
+    
+    private static String getCacheClassName() {
+        // On Heroku it's more convenient to set environment variables that system properties.
+        String name = System.getenv("BETAENGINE_CACHE");
+        
+        return name != null ? name : System.getProperty("betaengine.cache", NoCache.class.getName());
     }
     
     public static class NoCache implements Cache {
