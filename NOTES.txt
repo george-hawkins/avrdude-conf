@@ -27,6 +27,11 @@ https://devcenter.heroku.com/articles/custom-domains
 
 ---
 
+Set environment variable for my CacheFactory class:
+$ heroku config:set BETAENGINE_CACHE=net.betaengine.util.cache.DbCache
+
+---
+
 Via the Heroku web interface in the settings for the newly created app I did the following optional step:
 * Set the GitHub repo to george-hawkins/avrdude-conf
 
