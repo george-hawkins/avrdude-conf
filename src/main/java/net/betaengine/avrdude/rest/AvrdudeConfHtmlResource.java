@@ -132,13 +132,6 @@ public class AvrdudeConfHtmlResource {
         return CONTENT_PATTERN.matcher(template).replaceFirst(s);
     }
     
-    @SuppressWarnings("serial")
-    private static class ResourceException extends RuntimeException {
-        public ResourceException(Throwable t) {
-            super(t);
-        }
-    }
-    
     private String getTemplate() {
         try {
             return Resources.toString(
