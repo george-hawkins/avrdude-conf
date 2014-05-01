@@ -1,4 +1,90 @@
-The pom.xml was generated as described in the Heroku section of getting started with Jesey - https://jersey.java.net/documentation/latest/getting-started.html#heroku-webapp
+I did all the initial Heroku setup (installed toolbelt etc.) as per:
+
+https://devcenter.heroku.com/articles/getting-started-with-java
+
+---
+
+Installing on Heroku
+
+$ heroku create avrdude-conf
+$ git push heroku master
+$ heroku info
+
+That's it - now it's available like so:
+
+http://avrdude-conf.herokuapp.com/conf
+
+Luckily the subdomain avrdude-conf (perhaps unsurprisingly) was available.
+
+For more generic names you can omit the name part and just do:
+$ heroku create
+
+Heroku will then create a random name, e.g. immense-inlet-4196.
+
+If you have your own domain for which you can create CNAME records you can create a subdomain with the your desired name and point it at the Heroku created name as outlined here:
+
+https://devcenter.heroku.com/articles/custom-domains
+
+---
+
+Via the Heroku web interface in the settings for the newly created app I did the following optional step:
+* Set the GitHub repo to george-hawkins/avrdude-conf
+
+---
+
+The Heroku CLI tools are documented to some extent here:
+
+https://devcenter.heroku.com/articles/using-the-cli
+
+But as you'll get more help from:
+$ heroku help
+
+The tools are just a frondend to Heroku's REST based API:
+
+https://devcenter.heroku.com/articles/platform-api-reference
+
+---
+
+By default each app automatically gets a dev tier postgres DB:
+$ heroku pg:info
+
+This shows the postgres version - useful when looking up documentation.
+
+This and much more, along with interacting via Java is covered here:
+
+https://devcenter.heroku.com/articles/heroku-postgresql
+
+---
+
+Heroku needs the psql client to be installed before you can create tables etc. via the CLI:
+$ sudo apt-get install postgresql-client
+
+Now you can create a table:
+$ heroku pg:psql
+=> CREATE TABLE cache (
+>    uuid char(36) NOT NULL,
+>    cachekey varchar(2048) NOT NULL,
+>    cachevalue text NOT NULL
+> ); -- Note: KEY and VALUE are SQL keywords.
+=> \dt
+=> \q
+
+\dt is psql's rather obscure "show tables" command.
+\q is the quit command.
+
+To see the value of DATABASE_URL:
+$ heroku config
+
+To connect from outside the Heroku infrastructure, e.g. when doing local testing, you need to append the following to the DATABASE_URL you use:
+"&ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory"
+
+See: https://devcenter.heroku.com/articles/connecting-to-relational-databases-on-heroku-with-java#connecting-to-a-database-remotely
+
+---
+
+The pom.xml was generated as described in the Heroku section of getting started with Jesey:
+
+https://jersey.java.net/documentation/latest/getting-started.html#heroku-webapp
 
 I.e. like so:
 

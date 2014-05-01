@@ -55,7 +55,11 @@ public class ConfParser {
             @Override
             public String create() {
                 try {
-                    return Resources.toString(new URL(spec), Charsets.UTF_8);
+                    String s = Resources.toString(new URL(spec), Charsets.UTF_8);
+                    
+                    log.info("retrieved {}", spec);
+                    
+                    return s;
                 } catch (IOException e) {
                     throw new CacheException(e);
                 }
