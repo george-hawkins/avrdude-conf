@@ -19,3 +19,9 @@ E.g. to retrieve the JSON details for the part with signature 0x1e9514:
 To see the same resource as nicely rendered HTML open the same URL in your browser.
 
 At the bottom of every such HTML page is a summary of all the available resources.
+
+## License
+
+The net.betaengine code and related resources are covered by the Apache License, Version 2.0.
+
+See the LICENSE file for license rights and limitations.
