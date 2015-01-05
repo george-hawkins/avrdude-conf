@@ -84,7 +84,7 @@ $ heroku config
 
 To connect from outside the Heroku infrastructure, e.g. when doing local testing, you need to set `DATABASE_URL` yourself to the same value with the following appended:
 
-    &ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory
+    ?ssl=true&sslfactory=org.postgresql.ssl.NonValidatingFactory
 
 See the "[Connecting to a databases remotely](https://devcenter.heroku.com/articles/connecting-to-relational-databases-on-heroku-with-java#connecting-to-a-database-remotely)" section of Heroku's page on connecting to the Postgres DB from Java.
 
