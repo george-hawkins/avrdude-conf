@@ -142,6 +142,8 @@ Heroku's own [quick start documentation](https://devcenter.heroku.com/articles/g
 Miscellaneous
 -------------
 
+On most recent Ubuntu versions installing `maven` with `apt-get` installs Maven *3* (generally what you want) while installing `maven2` installs the older Maven 2.
+
 Change the simple caching strategy to use the DB:
 
 ```bash
