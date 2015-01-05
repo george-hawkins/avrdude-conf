@@ -20,6 +20,8 @@ To see the same resource as nicely rendered HTML open the same URL in your brows
 
 At the bottom of every such HTML page is a summary of all the available resources.
 
+See [NOTES.md](NOTES.md) for more information.
+
 ## License
 
 The net.betaengine code and related resources are covered by the Apache License, Version 2.0.
